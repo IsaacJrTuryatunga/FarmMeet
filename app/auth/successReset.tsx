@@ -28,36 +28,28 @@ export default function SuccessPage({ navigation }: Props) {
               justifyContent: 'center',
               marginBottom: 20,}}
              >
-            {/* <Icon
-              name="check"
-              size={30}
-              color='white' // Dynamic tick color
-              /> */}
               <AntDesign name="check" size={35} color="#fff" />
           </View>
       {/* Welcome Text */}
-      <Text style={styles.welcomeText}>Welcome To FarmMeet !</Text>
+      <Text style={styles.welcomeText}>All Done !</Text>
 
       {/* Subheading */}
       <Text style={styles.infoText}>
-        Your information has been saved. Let’s get you started on your farm-to-table journey!
+        Your password has been changed.
+      </Text>
+      <Text style={styles.infoText}>
+        You can now log in with your new password.
       </Text>
 
       {/* Buttons */}
       <View style={styles.footer}>
       <TouchableOpacity 
-        style={styles.setupButton} 
-        onPress={() => router.push('/profile/setUpProfile1')}
+        style={styles.loginButton} 
+        onPress={() => router.push('/auth/login')}
       >
-        <Text style={styles.setupButtonText}>Set Up Profile</Text>
+        <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={styles.skipButton} 
-        onPress={() => navigation.navigate('Home')}
-      >
-        <Text style={styles.skipButtonText}>Skip</Text>
-      </TouchableOpacity>
       </View>
     </View>
   );
@@ -82,40 +74,27 @@ const styles = StyleSheet.create({
     fontFamily: 'SchibstedGrotesk-Regular',
     fontSize: 13,
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 5,
   },
-  setupButton: {
+  loginButton: {
     backgroundColor: '#042D1F', // Dark green
     borderRadius: 10,
     paddingVertical: 15,
     // paddingHorizontal: 50,
     marginBottom: 15,
   },
-  setupButtonText: {
+  loginButtonText: {
     fontFamily: 'SchibstedGroteskBold',
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  skipButton: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#696969', // Dark green border
-    borderRadius: 10,
-    paddingVertical: 15,
-    // paddingHorizontal: 50,
-  },
-  skipButtonText: {
-    fontFamily: 'SchibstedGrotesk-Medium',
-    color: '#042D1F', // Dark green text
-    fontSize: 16,
-    textAlign: 'center',
-  },
+
 
 
   footer: {
-    paddingTop: '60%', // Space between button and other elements
+    paddingTop: '90%', // Space between button and other elements
     paddingBottom: 30, // Avoid sticking to the very bottom
     width: '100%',
   },

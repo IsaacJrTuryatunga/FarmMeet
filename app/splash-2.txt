@@ -11,7 +11,7 @@ const SplashScreen = () => {
         const timeout = setTimeout(() => {
           // router.push('/auth/login'); // Update to your target screen's path
           router.push('/splash-3');
-        }, 2000);
+        }, 300);
 
         // Cleanup the timeout if the component unmounts
         return () => clearTimeout(timeout);

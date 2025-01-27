@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation, useRouter } from 'expo-router';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { router } from 'expo-router';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Icon library
@@ -15,7 +16,8 @@ type RootStackParamList = {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SuccessPage'>;
 
-export default function SuccessPage({ navigation }: Props) {
+export default function profilePage({ navigation }: Props) {
+  const router = useRouter();
   return (
     <View style={styles.container}>
        <View
@@ -36,7 +38,7 @@ export default function SuccessPage({ navigation }: Props) {
               <AntDesign name="check" size={35} color="#fff" />
           </View>
       {/* Welcome Text */}
-      <Text style={styles.welcomeText}>Welcome To FarmMeet !</Text>
+      <Text style={styles.welcomeText}>Profile Updated Successfully!</Text>
 
       {/* Subheading */}
       <Text style={styles.infoText}>
@@ -45,18 +47,12 @@ export default function SuccessPage({ navigation }: Props) {
 
       {/* Buttons */}
       <View style={styles.footer}>
-      <TouchableOpacity 
-        style={styles.setupButton} 
-        onPress={() => router.push('/profile/setUpProfile1')}
-      >
-        <Text style={styles.setupButtonText}>Set Up Profile</Text>
-      </TouchableOpacity>
 
       <TouchableOpacity 
-        style={styles.skipButton} 
-        onPress={() => navigation.navigate('Home')}
+        style={styles.setupButton} 
+        onPress={() => router.push('/auth/login')}
       >
-        <Text style={styles.skipButtonText}>Skip</Text>
+        <Text style={styles.setupButtonText}>Go to Dashboard</Text>
       </TouchableOpacity>
       </View>
     </View>
@@ -115,7 +111,7 @@ const styles = StyleSheet.create({
 
 
   footer: {
-    paddingTop: '60%', // Space between button and other elements
+    paddingTop: '80%', // Space between button and other elements
     paddingBottom: 30, // Avoid sticking to the very bottom
     width: '100%',
   },

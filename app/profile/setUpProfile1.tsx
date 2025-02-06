@@ -4,6 +4,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import * as SecureStore from 'expo-secure-store';
 import DropdownMenu, { MenuOption } from '../../components/DropdownMenu'; 
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 import {
   View,
@@ -47,17 +49,17 @@ export default function ProfilePage() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]); //dropdow
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');  
-  const [dropdown1Selection, setDropdown1Selection] = useState<string[]>([]);
+  const [farmCatDrop, setFarmCatDrop] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
   
   // const [value, setValue] = useState<string | null>(null); // dropdown with defined type : explicitl
   
 
   const options = [
-    { value: 'Fruits and Vegetables', label: 'Fruits and Vegetables' },
-    { value: 'Meat and Seafood', label: 'Meat and Seafood' },
-    { value: 'Dairy and Eggs', label: 'Dairy and Eggs' },
-    { value: 'Root and Tubers', label: 'Root and Tubers' },
+    { value: 'vegetable', label: 'Vegetables' },
+    { value: 'meat_and_seafood', label: 'Meat and Seafood' },
+    { value: 'dairy_and_eggs', label: 'Dairy and Eggs' },
+    { value: 'root_and_tubers', label: 'Root and Tubers' },
   ];
 
   // const categories = [
@@ -152,82 +154,86 @@ export default function ProfilePage() {
     }
   };
 
-  const makeAuthenticatedRequest = async (
-    url: string,
-    method: string,
-    data: any = null
-  ) => {
-    try {
-      let token = accessToken;
-      if (!token) {
-        token = await refreshAccessToken();
-      }
+  // const makeAuthenticatedRequest = async (
+  //   url: string,
+  //   method: string,
+  //   data: any = null
+  // ) => {
+  //   try {
+  //     let token = accessToken;
+  //     if (!token) {
+  //       token = await refreshAccessToken();
+  //     }
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-        body: data ? data : undefined,
-      });
+  //     const response = await fetch(url, {
+  //       method,
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //       body: data ? data : undefined,
+  //     });
 
-      const responseData: ApiResponse = await response.json();
-      return responseData;
-    } catch (error) {
-      if (error instanceof Error && error.message === 'Failed to fetch') {
-        // Retry on token expiry
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          const retryResponse = await fetch(url, {
-            method,
-            headers: {
-              Authorization: `Bearer ${newToken}`,
-              'Content-Type': 'multipart/form-data',
-            },
-            body: data ? data : undefined,
-          });
+  //     const responseData: ApiResponse = await response.json();
+  //     return responseData;
+  //   } catch (error) {
+  //     if (error instanceof Error && error.message === 'Failed to fetch') {
+  //       // Retry on token expiry
+  //       const newToken = await refreshAccessToken();
+  //       if (newToken) {
+  //         const retryResponse = await fetch(url, {
+  //           method,
+  //           headers: {
+  //             Authorization: `Bearer ${newToken}`,
+  //             'Content-Type': 'multipart/form-data',
+  //           },
+  //           body: data ? data : undefined,
+  //         });
 
-          const retryData: ApiResponse = await retryResponse.json();
-          return retryData;
-        }
-      }
-      throw error;
-    }
-  };
+  //         const retryData: ApiResponse = await retryResponse.json();
+  //         return retryData;
+  //       }
+  //     }
+  //     throw error;
+  //   }
+  // };
 
   const handleSaveProfile = async () => {
-    if (
-      !farmName ||
-      !farmDescription ||
-      // !produceCategory.length ||
-      !selectedItems.length ||
-      !farmAddress ||
-      !fullName ||
-      !email ||
-      !phoneNumber
-    ) {
-      // Alert.alert('Error', 'Please fill out all fields.');
-      setErrorMessage('Please fill out all fields.');
-      setErrorModalVisible(true);
-      return;
-    }
+    // if (
+    //   !farmName ||
+    //   !farmDescription ||
+    //   // !produceCategory.length ||
+    //   !selectedItems.length ||
+    //   !farmAddress
+    //   // !fullName ||
+    //   // !email
+    //   // !phoneNumber
+    // ) {
+    //   // Alert.alert('Error', 'Please fill out all fields.');
+    //   setErrorMessage('Please fill out all fields.');
+    //   setErrorModalVisible(true);
+    //   return;
+    // }
 
     try {
       const formData = new FormData();
 
-      formData.append('farm_name', farmName);
-      formData.append('description', farmDescription);
+      formData.append('farm_name', JSON.stringify(farmName));
+      formData.append('description', JSON.stringify(farmDescription));
       // selectedItems.forEach((category) =>
       //     formData.append('farm_category', category)
       //   );
       // formData.append('farm_category', JSON.stringify(selectedItems));
-      formData.append('farm_category', selectedItems.join(', '));
-      formData.append('farm_address', farmAddress);
-      formData.append('email', email);
-      formData.append('farm_size', 'large');
-      formData.append('max_orders', '56');
-      formData.append('delivery_days', 'monday');
+      // formData.append('farm_category', selectedItems.join(', '));
+      if (farmCatDrop.length > 0) {
+        formData.append('farm_category', JSON.stringify(farmCatDrop)); // Send as JSON array
+      }
+      formData.append('farm_address', JSON.stringify(farmAddress));
+      formData.append('email', JSON.stringify(email));
+      // formData.append('farm_size', 'large');
+      // formData.append('max_orders', '56');
+      // formData.append('delivery_days', 'monday');
+
 
       if (profilePicture) {
         const uriParts = profilePicture.split('.');
@@ -239,23 +245,53 @@ export default function ProfilePage() {
         } as any);
       }
 
-      const responseData = await makeAuthenticatedRequest(
-        'https://farm-meet.onrender.com/farmer/farmer-profiles/',
-        'POST',
-        formData
-      );
 
-      if (responseData.success) {
-        Alert.alert('Success', 'Profile saved successfully!');
-        ///////////////////////////////////////
-        console.log('API Response:', responseData);
-        router.push('/setUpProfile2');
-      } else {
-        // Alert.alert('Error', responseData.message);
-        setErrorMessage(responseData.message || 'Registration failed');
-        console.error('Error response:', responseData);
-        setErrorModalVisible(true);
-      }
+       // Prepare the form data for local saving
+    const localFormData = {
+      farmName,
+      farmDescription,
+      farmCatDrop,
+      farmAddress,
+      email,
+      profilePicture,
+    };
+
+    // Save the form data locally using AsyncStorage
+    await AsyncStorage.setItem('firstPageFormData', JSON.stringify(localFormData));
+
+    // Log the saved data for debugging
+    console.log('Saved locally:', localFormData);
+
+    // Redirect to the second page
+    router.push('/profile/farmOperations');
+      
+    
+    
+    
+    
+      //   // ✅ Log form data before submission ************************* new entry
+      //   console.log('Submitting FormData:');
+      //   formData.forEach((value, key) => {
+      //     console.log(`${key}:`, value);
+      //   });
+
+      // const responseData = await makeAuthenticatedRequest(
+      //   'https://farm-meet-snj4.onrender.com/farmer/farmer-profiles/',
+      //   'POST',
+      //   formData
+      // );
+
+      // if (responseData.success) {
+      //   Alert.alert('Success', 'Profile saved successfully!');
+      //   ///////////////////////////////////////
+      //   console.log('API Response:', responseData);
+      //   router.push('/setUpProfile2');
+      // } else {
+      //   // Alert.alert('Error', responseData.message);
+      //   setErrorMessage(responseData.message || 'Registration failed');
+      //   console.error('Error response:', responseData);
+      //   setErrorModalVisible(true);
+      // }
     } catch (error) {
       setErrorMessage('An error occurred while saving the profile.');
       console.error('Error saving profile:', error);
@@ -317,14 +353,14 @@ export default function ProfilePage() {
           handleClose={() => setVisible(false)}
           handleOpen={() => setVisible(true)}
           options={options}
-          selectedValues={dropdown1Selection}
-          onSelectionChange={(newSelection) => setDropdown1Selection(newSelection)}
+          selectedValues={farmCatDrop}
+          onSelectionChange={(newSelection) => setFarmCatDrop(newSelection)}
           trigger={
             <TouchableOpacity onPress={() => setVisible(true)} style={styles.row}>
 
 
-              <Text style={[styles.dropTriggerStyle, { color: dropdown1Selection.length > 0 ? '#000' : '#A1A1A1',},]}>
-                {dropdown1Selection.length > 0 ? dropdown1Selection.join(',  ') : 'Select Farm category'}
+              <Text style={[styles.dropTriggerStyle, { color: farmCatDrop.length > 0 ? '#000' : '#A1A1A1',},]}>
+                {farmCatDrop.length > 0 ? farmCatDrop.join(',  ') : 'Select Farm category'}
               </Text>
 
 
@@ -352,14 +388,14 @@ export default function ProfilePage() {
         onChangeText={setFarmAddress}
       />
       <Text style={styles.sectionHeader}>CONTACT INFORMATION</Text>
-      <Text style={styles.fieldTitle}>Full Name</Text>
+      {/* <Text style={styles.fieldTitle}>Full Name</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter Full Name"
         placeholderTextColor="#a1a1a1"
         value={fullName}
         onChangeText={setFullName}
-      />
+      /> */}
       <Text style={styles.fieldTitle}>Email</Text>
       <TextInput
         style={styles.input}
@@ -369,7 +405,7 @@ export default function ProfilePage() {
         value={email}
         onChangeText={setEmail}
       />
-      <Text style={styles.fieldTitle}>Phone Number</Text>
+      {/* <Text style={styles.fieldTitle}>Phone Number</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter Phone Number"
@@ -377,7 +413,7 @@ export default function ProfilePage() {
         keyboardType="phone-pad"
         value={phoneNumber}
         onChangeText={setPhoneNumber}
-      />
+      /> */}
 
       <View style={styles.footer}>
       <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>

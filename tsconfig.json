@@ -2,6 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "lib": ["esnext", "dom"],
     "paths": {
       "@/*": [
         "./*"
@@ -12,3 +13,20 @@
     }
   }
 }
+
+
+
+// {
+//   "extends": "expo/tsconfig.base",
+//   "compilerOptions": {
+//     "strict": true,
+//     "paths": {
+//       "@/*": [
+//         "./*"
+//       ],
+//       "tailwind.config": [
+//         "./tailwind.config.js"
+//       ]
+//     }
+//   }
+// }

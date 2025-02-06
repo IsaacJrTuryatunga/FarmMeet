@@ -68,12 +68,12 @@ const RootLayout = () => {
   return (
     <Stack>
       {/* Splash Screens */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
         <Stack.Screen name="index" options={{ headerShown: false }}/>
         <Stack.Screen name="splash-1" options={{ headerShown: false }}/>
         <Stack.Screen name="auth" options={{ headerShown: false }}/>
         <Stack.Screen name="profile" options={{ headerShown: false }}/>
-        <Stack.Screen name="home" options={{ headerShown: false }}/> {/* Home Tabs */}
-        
+        <Stack.Screen name="wallet" options={{ headerShown: false }}/>
     </Stack>
   );
 };

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Alert,
   Modal,
   FlatList,
   Pressable,
@@ -13,6 +14,8 @@ import { Ionicons } from '@expo/vector-icons'; // For the arrow icon
 import { router } from 'expo-router';
 import DropdownMenu, { MenuOption } from '../../components/DropdownMenu'; 
 import { AntDesign } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 export default function FarmOperationsPage() {
@@ -20,62 +23,292 @@ export default function FarmOperationsPage() {
   const [maxOrders, setMaxOrders] = useState('');
   const [deliveryDays, setDeliveryDays] = useState<string[]>([]);
   const [farmSizeModalVisible, setFarmSizeModalVisible] = useState(false);
-  const [deliveryDaysModalVisible, setDeliveryDaysModalVisible] = useState(false);
+  // const [deliveryDaysModalVisible, setDeliveryDaysModalVisible] = useState(false);
   //-----dropdowns
-  const [dropdown1Selection, setDropdown1Selection] = useState<string[]>([]);
-  const [dropdown2Selection, setDropdown2Selection] = useState<string[]>([]);
+  const [farmSizeDrop, setFarmSizeDrop] = useState<string[]>([]);
+  const [deliveryDaysDrop, setDeliveryDaysDrop] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
   // const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [statusvisible, setstatusVisible] = useState(false);
+  const [firstPageData, setFirstPageData] = useState<any>(null); // To store data from setupProfile1
+
+  
   // const [selectedstatusItems, setSelectedstatusItems] = useState<string[]>([]);
+  // const farmSizeOptions = ['Small', 'Medium', 'Large', 'Enterprise'];
+  // const deliveryDaysOptions = [
+  //   'Monday',
+  //   'Tuesday',
+  //   'Wednesday',
+  //   'Thursday',
+  //   'Friday',
+  //   'Saturday',
+  //   'Sunday',
+  // ];
 
+  // Fetch data from AsyncStorage when the component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const savedData = await AsyncStorage.getItem('firstPageFormData');
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          setFirstPageData(parsedData);
+          console.log('Retrieved first page data:', parsedData);
+        }
+      } catch (error) {
+        console.error('Error retrieving data:', error);
+      }
+    };
 
-  const farmSizeOptions = ['Small', 'Medium', 'Large', 'Enterprise'];
-  const deliveryDaysOptions = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
+    fetchData();
+  }, []);
 
   const farmoptions = [
-    { value: 'Small', label: 'Small' },
-    { value: 'Medium', label: 'Medium' },
-    { value: 'Large', label: 'Large' },
-    { value: 'Enterprise', label: 'Enterprise' },
+    { value: 'small', label: 'Small' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'large', label: 'Large' },
+    { value: 'enterprise', label: 'Enterprise' },
   ];
 
   const dayoptions = [
-    { value: 'Monday', label: 'Monday' },
-    { value: 'Tuesday', label: 'Tuesday' },
-    { value: 'Wednesday', label: 'Wednesday' },
-    { value: 'Thursday', label: 'Thursday' },
-    { value: 'Friday', label: 'Friday' },
-    { value: 'Saturday', label: 'Saturday' },
-    { value: 'Sunday', label: 'Sunday' },
+    { value: 'monday', label: 'Monday' },
+    { value: 'tuesday', label: 'Tuesday' },
+    { value: 'wednesday', label: 'Wednesday' },
+    { value: 'thursday', label: 'Thursday' },
+    { value: 'friday', label: 'Friday' },
+    { value: 'saturday', label: 'Saturday' },
+    { value: 'sunday', label: 'Sunday' },
   ];
 
   const toggleSelection = (item: string, setSelected: React.Dispatch<React.SetStateAction<string[]>>, selected: string[]) => {
     setSelected(selected.includes(item) ? selected.filter((i) => i !== item) : [...selected, item]);
   };
 
-  const handleSaveAndContinue = () => {
-    if (!farmSize.length || !maxOrders || !deliveryDays.length) {
-      alert('Please fill out all fields.');
-      return;
-    }
+  //  Handle saving and submitting the form _______________________________________________________________________
+  const handleSaveAndContinue = async () => {
+    try {
+      // Combine data from setupProfile1 and FarmOperationsPage
+      const combinedData = {
+        ...firstPageData,
+        farmSize: farmSizeDrop.length > 0 ? farmSizeDrop[0] : null,
+        maxOrders,
+        deliveryDays: deliveryDaysDrop.length > 0 ? deliveryDaysDrop : null,
+      };
   
-    // Save details successfully
-    alert('Details saved successfully!');
-    console.log('Farm Operations:', { farmSize, maxOrders, deliveryDays });
-    
-    // Redirect to the next page
-    router.push('/profile/farmProduce');
+      // Create FormData without extra JSON.stringify()
+      const formData = new FormData();
+      formData.append('farm_name', combinedData.farmName);
+      formData.append('description', combinedData.farmDescription);
+      formData.append('farm_category', JSON.stringify(combinedData.farmCatDrop)); // Keep array as JSON
+      formData.append('farm_address', combinedData.farmAddress);
+      formData.append('email', combinedData.email);
+      formData.append('farm_size', combinedData.farmSize);
+      formData.append('max_orders', combinedData.maxOrders.toString()); // Convert number to string
+      formData.append('delivery_days', JSON.stringify(combinedData.deliveryDays)); // Keep array as JSON
+  
+      // Handle profile picture
+      // if (combinedData.profilePicture) {
+      //   const uriParts = combinedData.profilePicture.split('.');
+      //   const fileType = uriParts[uriParts.length - 1];
+      //   formData.append('farmer_image', {
+      //     uri: combinedData.profilePicture,
+      //     name: 'profile.' + fileType,
+      //     type: 'image/' + fileType,
+      //   } as any);
+      // }
+  
+      // Log FormData as a regular object with proper formatting
+      const formDataObj: { [key: string]: any } = {};
+      formData.forEach((value, key) => {
+        // Parse JSON strings back to objects/arrays where needed
+        if (key === 'farm_category' || key === 'delivery_days') {
+          formDataObj[key] = JSON.parse(value as string);
+        } else if (key === 'max_orders') {
+          formDataObj[key] = parseInt(value as string, 10);
+        } else {
+          formDataObj[key] = value;
+        }
+      });
+      console.log('FormData (as JSON):', JSON.stringify(formDataObj, null, 2));
+  
+      const makeAuthenticatedRequest = async (url: string, method: string, body: FormData) => {
+        const token = await AsyncStorage.getItem('authToken');
+        console.log('Retrieved Token:', token); // addedd ---------------
+
+        if (!token) {
+          throw new Error('Authentication token is missing.');
+        }
+  
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`,
+          },
+          body,
+        });
+  
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`HTTP Error ${response.status}: ${errorText}`);        }
+  
+        return await response.json();
+      };
+  
+      // Make the API request
+      const responseData = await makeAuthenticatedRequest(
+        'https://farm-meet-snj4.onrender.com/farmer/farmer-profiles/',
+        'POST',
+        formData
+      );
+  
+      if (responseData.success) {
+        await AsyncStorage.removeItem('firstPageFormData');
+        Alert.alert('Success', 'Profile saved successfully!');
+        router.push('/profile/farmProduce');
+      } else {
+        Alert.alert('Error', responseData.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      Alert.alert('Error', 'An error occurred while submitting the form');
+    }
   };
   
+  
+  
+  //  const handleSaveAndContinue = async () => {
+  //   // if (!farmSize.length || !maxOrders || !deliveryDays.length) {
+  //   //   Alert.alert('Error', 'Please fill out all fields.');
+  //   //   return;
+  //   // }
+
+  //   try {
+  //     // Combine data from setupProfile1 and FarmOperationsPage
+  //     const combinedData = {
+  //       ...firstPageData,
+  //       farmSize: farmSizeDrop.length > 0 ? farmSizeDrop[0] : null, // Ensure it's not undefined
+  //       maxOrders,
+  //       deliveryDays: deliveryDaysDrop.length > 0 ? deliveryDaysDrop : null,
+  //       // farmCategory: firstPageData?.dropdown1Selection || null, // Ensure farm category is included
+  //     };
+
+  //     // Log the combined data for debugging
+  //     console.log('Combined Form Data:', combinedData);
+
+  //     // // Submit the combined data to the API
+  //     // const formData = new FormData();      
+  //     // formData.append('farm_name', JSON.stringify(combinedData.farmName));
+  //     // formData.append('description', JSON.stringify(combinedData.farmDescription));
+  //     // formData.append('farm_category', JSON.stringify(combinedData.farmCatDrop));
+  //     // formData.append('farm_address', JSON.stringify(combinedData.farmAddress));
+  //     // formData.append('email', JSON.stringify(combinedData.email));
+  //     // formData.append('farm_size', JSON.stringify(combinedData.farmSize));
+  //     // // if (farmSizeDrop.length > 0) {
+  //     // //   formData.append('farm_size', JSON.stringify(combinedData.farmSizeDrop)); // Send as JSON array
+  //     // // }
+  //     // formData.append('max_orders', combinedData.maxOrders);
+  //     // formData.append('delivery_days', JSON.stringify(combinedData.deliveryDays));
+  //     // // if (deliveryDaysDrop.length > 0) {
+  //     // //   formData.append('delivery_days', JSON.stringify(combinedData.deliveryDaysDrop)); // Send as JSON array
+  //     // // }
+
+  //     const formData = new FormData();
+  //         formData.append('farm_name', combinedData.farmName); // No JSON.stringify!
+  //         formData.append('description', combinedData.farmDescription);
+  //         formData.append('farm_category', JSON.stringify(combinedData.farmCatDrop)); // Array → JSON
+  //         formData.append('farm_address', combinedData.farmAddress);
+  //         formData.append('email', combinedData.email);
+  //         formData.append('farm_size', combinedData.farmSize);
+  //         formData.append('max_orders', combinedData.maxOrders.toString()); // Ensure it's a string
+  //         formData.append('delivery_days', JSON.stringify(combinedData.deliveryDays)); // Array → JSON
+
+  //     if (combinedData.profilePicture) {
+  //       const uriParts = combinedData.profilePicture.split('.');
+  //       const fileType = uriParts[uriParts.length - 1];
+  //       formData.append('farmer_image', {
+  //         uri: combinedData.profilePicture,
+  //         name: `profile.${fileType}`,
+  //         type: `image/${fileType}`,
+  //       } as any);
+  //     }
+
+  //     // Log form data before submission
+  //     console.log('Submitting FormData:');
+  //     formData.forEach((value, key) => {
+  //       console.log(`${key}:`, value);
+  //     });
+
+  //         // Log the FormData as a regular object
+  //   console.log('FormData (as JSON):');
+  //   const formDataObj: { [key: string]: any } = {};
+  //   formData.forEach((value, key) => {
+  //     formDataObj[key] = value;
+  //   });
+  //   console.log(JSON.stringify(formDataObj, null, 2));
+
+  //     const makeAuthenticatedRequest = async (url: string, method: string, body: FormData) => {
+  //       try {
+  //         const token = await AsyncStorage.getItem('authToken'); // Retrieve the stored token
+  //         if (!token) {
+  //           Alert.alert('Error', 'Authentication token is missing.');
+  //           return;
+  //         }
+      
+  //         const response = await fetch(url, {
+  //           method,
+  //           headers: {
+  //             'Content-Type': 'multipart/form-data',
+  //             'Authorization': `Bearer ${token}`,
+  //           },
+  //           body,
+  //         });
+
+  //        // Log the entire response
+  //         console.log('Raw API Response:', response);
+
+  //         if (!response.ok) {
+  //           const errorText = await response.text(); // Handle non-JSON responses
+  //           throw new Error(`HTTP Error ${response.status}: ${errorText}`);
+  //         }
+            
+
+
+  //         const responseData = await response.json();
+  //         console.log('Parsed API Response:', responseData); // Log parsed response
+  //         return responseData;
+  //       } catch (error) {
+  //         console.error('Error making authenticated request:', error);
+  //         throw error;
+  //       }
+  //     };
+
+  //     // Make the API request
+  //     const responseData = await makeAuthenticatedRequest(
+  //       'https://farm-meet-snj4.onrender.com/farmer/farmer-profiles/',
+  //       'POST',
+  //       formData
+  //     );
+
+  //     if (responseData.success) {
+  //       Alert.alert('Success', 'Profile saved successfully!');
+  //       console.log('API Response:', responseData);
+
+  //       // Clear the locally saved data after successful submission
+  //       await AsyncStorage.removeItem('firstPageFormData');
+
+  //       // Redirect to the next page
+  //       router.push('/profile/farmProduce');
+  //     } else {
+  //       Alert.alert('Error', responseData.message || 'Registration failed');
+  //       console.error('Error response:', responseData);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error submitting form:', error);
+  //     Alert.alert('Error', 'An error occurred while submitting the form');
+  //   }
+  // };
+  // ____________________________________________________________________________________ end of handle profile
   
   return (
     <View style={styles.container}>
@@ -89,14 +322,14 @@ export default function FarmOperationsPage() {
           handleClose={() => setVisible(false)}
           handleOpen={() => setVisible(true)}
           options={farmoptions}
-          selectedValues={dropdown1Selection}
-          onSelectionChange={(newSelection) => setDropdown1Selection(newSelection)}
+          selectedValues={farmSizeDrop}
+          onSelectionChange={(newSelection) => setFarmSizeDrop(newSelection)}
           trigger={
             <TouchableOpacity onPress={() => setVisible(true)} style={styles.row}>
 
 
-              <Text style={[styles.dropTriggerStyle, { color: dropdown1Selection.length > 0 ? '#000' : '#A1A1A1',},]}>
-                {dropdown1Selection.length > 0 ? dropdown1Selection.join(',  ') : 'Select Farm category'}
+              <Text style={[styles.dropTriggerStyle, { color: farmSizeDrop.length > 0 ? '#000' : '#A1A1A1',},]}>
+                {farmSizeDrop.length > 0 ? farmSizeDrop.join(',  ') : 'Select Farm category'}
               </Text>
 
 
@@ -107,47 +340,6 @@ export default function FarmOperationsPage() {
           isSingleSelect={true}
         />
       </View>
-
-      {/* <TouchableOpacity style={styles.input} onPress={() => setFarmSizeModalVisible(true)}>
-        <Text style={styles.text}>
-          {farmSize.length ? farmSize.join(', ') : 'Select Farm Size'}
-        </Text>
-      </TouchableOpacity>
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={farmSizeModalVisible}
-        onRequestClose={() => setFarmSizeModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Farm Size</Text>
-            <FlatList
-              data={farmSizeOptions}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => toggleSelection(item, setFarmSize, farmSize)}
-                  style={styles.checkboxContainer}
-                >
-                  <Ionicons
-                    name={farmSize.includes(item) ? 'checkbox' : 'square-outline'}
-                    size={24}
-                    color="#042D1F"
-                  />
-                  <Text style={styles.checkboxLabel}>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-            <Pressable
-              style={styles.saveButton}
-              onPress={() => setFarmSizeModalVisible(false)}
-            >
-              <Text style={styles.saveButtonText}>Done</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal> */}
 
       {/* Maximum Orders */}
        <Text style={styles.label}>Maximum Orders</Text>
@@ -170,14 +362,14 @@ export default function FarmOperationsPage() {
           handleClose={() => setstatusVisible(false)}
           handleOpen={() => setstatusVisible(true)}
           options={dayoptions}
-          selectedValues={dropdown2Selection}
-          onSelectionChange={(newSelection) => setDropdown2Selection(newSelection)}
+          selectedValues={deliveryDaysDrop}
+          onSelectionChange={(newSelection) => setDeliveryDaysDrop(newSelection)}
           trigger={
             <TouchableOpacity onPress={() => setstatusVisible(true)} style={styles.row}>
 
 
-              <Text style={[styles.dropTriggerStyle, { color: dropdown2Selection.length > 0 ? '#000' : '#A1A1A1',},]}>
-                {dropdown2Selection.length > 0 ? dropdown2Selection.join(',  ') : 'Select Status'}
+              <Text style={[styles.dropTriggerStyle, { color: deliveryDaysDrop.length > 0 ? '#000' : '#A1A1A1',},]}>
+                {deliveryDaysDrop.length > 0 ? deliveryDaysDrop.join(',  ') : 'Select Status'}
               </Text>
 
 
@@ -232,8 +424,8 @@ export default function FarmOperationsPage() {
       <View style={styles.footer}> 
 
       <TouchableOpacity style={styles.saveButton} 
-    //   onPress={handleSaveAndContinue}
-      onPress={() => router.push('/profile/farmProduce')}>
+      onPress={handleSaveAndContinue}>
+      {/* // onPress={() => router.push('/profile/farmProduce')}> */}
         <Text style={styles.saveButtonText}>Save And Continue</Text>
       </TouchableOpacity>
 

@@ -8,31 +8,48 @@ import {
   ScrollView,
   Modal,
   FlatList,
+  Image,
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { AntDesign } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import DropdownMenu, { MenuOption } from '../../components/DropdownMenu'; // Adjust the import path based on your project structure
 
 
 export default function PostProduce() {
-  const [produceName, setProduceName] = useState('');
-  const [description, setDescription] = useState('');
-  const [produceCategory, setProduceCategory] = useState<string[]>([]);
-  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
-  const [produceStatus, setProduceStatus] = useState('');
-  const [price, setPrice] = useState('');
-  const [pickupLocation, setPickupLocation] = useState('');
+  const params = useLocalSearchParams();
+  const productParam = Array.isArray(params.product) ? params.product[0] : params.product;
+  const productToEdit = productParam ? JSON.parse(decodeURIComponent(productParam)) : null;
+
+  // const [produceName, setProduceName] = useState('');
+  // const [description, setDescription] = useState('');
+  // const [produceCategory, setProduceCategory] = useState<string[]>([]);
+  // const [produceStatus, setProduceStatus] = useState('');
+  // const [images, setImages] = useState<string[]>([]);
+  // const [price, setPrice] = useState('');
+  // const [pickupLocation, setPickupLocation] = useState('');
+
+  const [produceName, setProduceName] = useState(productToEdit?.name || '');
+  const [description, setDescription] = useState(productToEdit?.description || '');
+  const [produceCategory, setProduceCategory] = useState(productToEdit?.category ? [productToEdit.category] : []);
+  const [produceStatus, setProduceStatus] = useState(productToEdit?.available || '');
+  const [images, setImages] = useState(productToEdit?.images || []);
+  const [price, setPrice] = useState(productToEdit?.price || '');
+  const [pickupLocation, setPickupLocation] = useState(productToEdit?.pickupLocation || '');
+
 
   const [dropdown1Selection, setDropdown1Selection] = useState<string[]>([]);
   const [dropdown2Selection, setDropdown2Selection] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
-  // const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [statusvisible, setstatusVisible] = useState(false);
+  
+  
+  
+  // const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  // const [selectedItems, setSelectedItems] = useState<string[]>([]);
   // const [selectedstatusItems, setSelectedstatusItems] = useState<string[]>([]);
 
   const categories = [
@@ -62,8 +79,12 @@ export default function PostProduce() {
     });
 
     if (!result.canceled) {
-      setImages((prev) => [...prev, ...result.assets.map((asset) => asset.uri)]);
+      setImages((prev: string[]) => [...prev, ...result.assets.map((asset) => asset.uri)]);
     }
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prevImages: string[]) => prevImages.filter((_: string, i: number) => i !== index));
   };
 
   const toggleCategorySelection = (category: string) => {
@@ -139,7 +160,9 @@ export default function PostProduce() {
     }
   };
   
+  const handleSaveChanges = async ( )=> {
 
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -192,51 +215,6 @@ export default function PostProduce() {
         />
       </View>
 
-
-      {/* <TouchableOpacity
-        style={styles.input}
-        onPress={() => setCategoryModalVisible(true)}
-        >
-        <Text style={styles.text}>
-          {produceCategory.length ? produceCategory.join(', ') : 'Select Category'}
-        </Text>
-      </TouchableOpacity>
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={categoryModalVisible}
-        onRequestClose={() => setCategoryModalVisible(false)}
-        >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Categories</Text>
-            <FlatList
-              data={categories}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => toggleCategorySelection(item)}
-                  style={styles.checkboxContainer}
-                  >
-                  <Ionicons
-                    name={produceCategory.includes(item) ? 'checkbox' : 'square-outline'}
-                    size={24}
-                    color="#042D1F"
-                    />
-                  <Text style={styles.checkboxLabel}>{item}</Text>
-                </TouchableOpacity>
-              )}
-              />
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={() => setCategoryModalVisible(false)}
-              >
-              <Text style={styles.saveButtonText}>Done</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal> */}
-
       {/* Upload Images */}
       <Text style={styles.label}>Upload Images of Produce</Text>
       <TouchableOpacity style={styles.uploadButton} onPress={pickImages}>
@@ -244,12 +222,27 @@ export default function PostProduce() {
         {/* <Ionicons name="arrow-up-circle-outline" size={24} color="#042D1F" /> */}
         <Text style={styles.uploadText}>Upload Images</Text>
       </TouchableOpacity>
-      <View style={styles.imagePreviewContainer}>
+      {/* <View style={styles.imagePreviewContainer}>
         {images.map((uri, index) => (
           <View key={index} style={styles.imagePreview}>
             <Ionicons name="image-outline" size={24} color="#042D1F" />
           </View>
         ))}
+      </View> */}
+
+      <View style={styles.imagePreviewContainer}>
+        {images.length > 0 ? (
+          images.map((uri: string, index: number) => (
+            <View key={index} style={styles.imagePreview}>
+              <Image source={{ uri }} style={styles.imageThumbnail} />
+              <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeIcon}>
+                <Ionicons name="close-circle" size={20} color="red" />
+              </TouchableOpacity>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noImagesText}>No images selected</Text>
+        )}
       </View>
 
       {/* Produce Status */}
@@ -282,16 +275,6 @@ export default function PostProduce() {
         />
       </View>
 
-      {/* <Picker
-        selectedValue={produceStatus}
-        onValueChange={(itemValue: string) => setProduceStatus(itemValue)}
-        style={styles.picker}
-        >
-        <Picker.Item label="Select Status" value="" />
-        <Picker.Item label="Available" value="Available" />
-        <Picker.Item label="Out Of Stock" value="Out Of Stock" />
-      </Picker> */}
-
       {/* Produce Price */}
       <Text style={styles.label}>Set Produce Price</Text>
       <TextInput
@@ -315,7 +298,7 @@ export default function PostProduce() {
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.button, styles.draftButton]}
           onPress={handleSaveDraft}
         >
@@ -326,7 +309,24 @@ export default function PostProduce() {
           onPress={handlePublishProduce}
         >
           <Text style={styles.publishButtonText}>Publish Produce</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+
+          {productToEdit ? (
+              // Render "Save Changes" when editing
+              <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSaveChanges}>
+                <Text style={styles.saveButtonText}>Save Changes</Text>
+              </TouchableOpacity>
+            ) : (
+              // Render "Save as Draft" and "Publish Produce" when adding
+              <>
+                <TouchableOpacity style={[styles.button, styles.draftButton]} onPress={handleSaveDraft}>
+                  <Text style={styles.draftButtonText}>Save As A Draft</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.button, styles.publishButton]} onPress={handlePublishProduce}>
+                  <Text style={styles.publishButtonText}>Publish Produce</Text>
+                </TouchableOpacity>
+              </>
+            )}
       </View>
       <TouchableOpacity style={styles.DButton} onPress={()=>router.push('/profile/profileSuccess')}>
         <Text style={styles.DButtonText}>Dev Check</Text>
@@ -552,7 +552,23 @@ const styles = StyleSheet.create({
         fontFamily: "SchibstedGrotesk-Bold",
         color: '#a1a1a1',
         fontSize: 12,
-      }
+      },
+
+
+      imageThumbnail: {
+        width: 70,
+        height: 70,
+        borderRadius: 8,
+      },
+      removeIcon: {
+        position: 'absolute',
+        top: 2,
+        right: 2,
+      },
+      noImagesText: {
+        color: '#777',
+        fontSize: 14,
+      },
 });
 
 

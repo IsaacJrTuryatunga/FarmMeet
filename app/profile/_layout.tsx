@@ -1,6 +1,10 @@
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 
 const ProfileLayout = () => {
+  const params = useLocalSearchParams();
+  const isEditing = !!params.product; // Check if we're editing
+
+
   return (
     <Stack>
       <Stack.Screen name="setUpProfile1" options={{ 
@@ -21,7 +25,20 @@ const ProfileLayout = () => {
       <Stack.Screen name="profileSuccess" options={{ headerShown: false, }}/>
       <Stack.Screen name="farmProduce" 
       options={{ 
-        headerTitle:"Produce", 
+        headerTitle: isEditing? 'Edit Produce' : 'Produce', 
+          headerShown: true, 
+          headerBackVisible: true, 
+          headerTitleAlign:"left", 
+          headerShadowVisible: false,
+          headerTitleStyle: {
+            fontSize: 20,
+            fontFamily:"SchibstedGroteskBold",
+            // fontWeight: 900,
+            },  }}
+          />
+      <Stack.Screen name="farmOperations" 
+      options={{ 
+        headerTitle:"Farm Operations", 
           headerShown: true, 
           headerBackVisible: true, 
           headerTitleAlign:"left", 
@@ -31,9 +48,9 @@ const ProfileLayout = () => {
             fontFamily:"SchibstedGroteskBold",
             // fontWeight: 900,
             },  }}/>
-      <Stack.Screen name="farmOperations" 
+      <Stack.Screen name="editProduce" 
       options={{ 
-        headerTitle:"Farm Operations", 
+        headerTitle:"Edit Produce", 
           headerShown: true, 
           headerBackVisible: true, 
           headerTitleAlign:"left", 

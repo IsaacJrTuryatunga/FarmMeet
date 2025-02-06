@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity,BackHandler } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity,BackHandler, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen'
 import { useEffect, useCallback } from 'react';
@@ -64,9 +64,16 @@ const GreenScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.logoHolder}>
+        <Image
+        source={require('../assets/icon.png')}
+        style={styles.logoImage}
+      />
+      </View>
       <TouchableOpacity onPress={handleTap}>
         <Text style={styles.whiteText}>FarmMeet</Text>
       </TouchableOpacity>
+      <Text style={styles.smallWhiteText}>An online farmers market</Text>
     </View>
   );
 };
@@ -80,9 +87,25 @@ const styles = StyleSheet.create({
   },
   whiteText: {
     fontFamily: 'SchibstedGrotesk-ExtraBold',
-    fontSize: 48,
+    fontSize: 35,
     color: '#FFFFFF',
   },
+  smallWhiteText:{
+    fontFamily: 'SchibstedGrotesk-Regular',
+    fontSize: 13,
+    color: '#FFFFFF',
+  },
+  logoHolder : {
+    width:'auto',
+    height: 'auto',
+  },
+
+  //logo -------------
+  logoImage: {
+    height: 70,
+    width: 73,
+    marginBottom: 5
+  }
 });
 
 export default GreenScreen;

@@ -11,7 +11,6 @@ import {
   Alert 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { red } from 'react-native-reanimated/lib/typescript/Colors';
 
 export default function SignIn() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -33,7 +32,7 @@ export default function SignIn() {
     setLoading(true);
   
     try {
-      const response = await fetch('https://farm-meet.onrender.com/users/login/', {
+      const response = await fetch('https://farm-meet-snj4.onrender.com/users/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

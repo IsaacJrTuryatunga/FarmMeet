@@ -92,7 +92,7 @@ const SplashScreen = () => {
             Freshly Harvested By Local Farmers
           </Text> */}
 
-          <TouchableOpacity onPress={() => router.push('/auth/register')} style={styles.signupButton}>
+          <TouchableOpacity onPress={() => router.push('/auth/signup')} style={styles.signupButton}>
             <Text style={styles.signupText}>Sign Up</Text>
           </TouchableOpacity>
           <View style={styles.redirectSignin}>

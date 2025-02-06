@@ -19,6 +19,7 @@ export default function Register() {
   const [isChecked, setIsChecked] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
   const [fullName, setFullName] = useState('');
+  const [userName, setUserName] = useState(''); //*****to be added when  the data structur is resolved
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
@@ -141,7 +142,7 @@ export default function Register() {
           onChangeText={setFullName}
         />
 
-        <Text style={styles.fieldTitle}>User Name</Text>
+        <Text style={styles.fieldTitle}>User Name *</Text>
         <TextInput
           style={styles.input}
           placeholder="e.g. @JohnUnique"
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
   choiceButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 20,
+    marginHorizontal: 2,
   },
   choiceButton: {
     width: 24,
@@ -360,8 +361,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
+    // marginLeft:30,
   },
   radioLabel: {
+    fontFamily: 'SchibstedGrotesk-SemiBold',
+    marginRight:35,
     fontSize: 16,
     color: '#000',
   },

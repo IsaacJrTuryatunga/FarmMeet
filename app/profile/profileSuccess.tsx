@@ -50,7 +50,7 @@ export default function profilePage({ navigation }: Props) {
 
       <TouchableOpacity 
         style={styles.setupButton} 
-        onPress={() => router.push('/auth/login')}
+        onPress={() => router.push('dashboard')}
       >
         <Text style={styles.setupButtonText}>Go to Dashboard</Text>
       </TouchableOpacity>
